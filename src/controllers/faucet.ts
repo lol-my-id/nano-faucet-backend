@@ -36,15 +36,10 @@ export class FaucetController {
     @ValidateAddress()
     @Get('/:address/when')
     when(@Response() res: ExpressResponse, @Params('address') address: string) {
-        const response = { seconds: 0 }; // How long until the next claim in seconds
+        const response = { lastDate: 0, claimTimeout: CLAIM_TIMEOUT_SECONDS }; // lastDate is timestamp
 
         Wallet.ByAddress(address).then((data) => {
-            const now = Date.now();
-            const diff = now - data.last;
-
-            // Convert to seconds remaining
-            response.seconds = CLAIM_TIMEOUT_SECONDS - Math.floor(diff/1000);
-            if(response.seconds < 0) response.seconds = 0;
+            response.lastDate = data.last;
 
             return res.status(200).json(response);
         }).catch((err) => {

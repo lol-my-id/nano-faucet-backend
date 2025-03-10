@@ -56,6 +56,7 @@ async function main() {
     app.use(express.static('public'));
 
     // CORS Allow All
+    // TODO: Change this to only allow specific origins, especially in production
     app.use((req, res, next) => {
         res.header('Access-Control-Allow-Origin', '*');
         res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');

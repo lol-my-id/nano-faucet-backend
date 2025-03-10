@@ -67,4 +67,5 @@ export class Wallet {
     }
 
     static IncrementRefTotal = (address: string) => WalletModel.findOneAndUpdate({ address }, { $inc: { ref_total: 1 } }, { new: true });
+    static AwardReferral = (address: string, prize: number) => WalletModel.findOneAndUpdate({ address }, { $inc: { ref_earnings: prize, ref_claim: prize } }, { new: true });
 }

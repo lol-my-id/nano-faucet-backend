@@ -44,7 +44,7 @@ function initFaucets() {
 }
 
 async function main() {
-    await ExchangeService.update(true);
+    ExchangeService.startService();
     await Database.connect();
 
     initFaucets();

@@ -1,5 +1,6 @@
 import { WalletNotFoundError } from "../types/errors";
 import { Wallet } from "./crud";
+import { ExchangeService } from "./exchangeService";
 import log from "./logger";
 import { CLAIM_TIMEOUT_SECONDS, Currency, getCurrencyFromAddress, validate, validateAddress } from "./utils";
 
@@ -93,17 +94,11 @@ export class Faucet {
         });
     }
 
-    async awardReferral(address: string, amount: number): Promise<void> {
+    awardReferral(address: string, amount: number): void {
         if (!validate(address)) throw new Error('Invalid address');
         if (amount <= 0) throw new Error('Invalid amount');
 
-        try {
-            const wallet = await Wallet.ByAddress(address);
-            await Wallet.Update(wallet._id.toString(), { $inc: { ref_earnings: amount, ref_claim: amount } });
-        } catch (error) {
-            log.error('Failed to award referral: ' + error);
-            throw error;
-        }
+        Wallet.AwardReferral(address, amount).catch(()=>{})
     }
 
     /**
@@ -118,7 +113,6 @@ export class Faucet {
 
         const isRef = validate(refAddress);
         const prize = this.roll();
-        const refPrize = Math.floor(prize * 0.2); // TODO: Use Exchange Service
 
         return new Promise<Claim>((resolve, reject) => {
             Wallet.ByAddress(address).then(async (data) => {
@@ -138,7 +132,13 @@ export class Faucet {
                 try {
                     const hash = await this.settings.wallet.send(address, prize);
 
-                    // TODO: Award ref if exists
+
+                    if(data.ref_link && ExchangeService.available) {
+                        try {
+                            const refPrize = ExchangeService.convert(this.settings.currency, getCurrencyFromAddress(data.ref_link) as Currency, prize); // TODO: Use Exchange Service
+                            this.awardReferral(data.ref_link, refPrize);
+                        } catch {} // Ignore errors
+                    }
 
                     resolve({ hash, prize });
                 } catch {

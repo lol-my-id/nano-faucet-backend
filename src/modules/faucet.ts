@@ -135,7 +135,7 @@ export class Faucet {
 
                     if(data.ref_link && ExchangeService.available) {
                         try {
-                            const refPrize = ExchangeService.convert(this.settings.currency, getCurrencyFromAddress(data.ref_link) as Currency, prize); // TODO: Use Exchange Service
+                            const refPrize = ExchangeService.convert(this.settings.currency, getCurrencyFromAddress(data.ref_link) as Currency, prize);
                             this.awardReferral(data.ref_link, refPrize);
                         } catch {} // Ignore errors
                     }

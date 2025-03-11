@@ -35,8 +35,7 @@ export class Wallet {
         log.debug('Creating wallet:', address, currency, refAddress);
         if(refAddress) {
             try {
-                const wallet = await Wallet.ByAddress(refAddress);
-                await this.Update(wallet._id.toString(), { $inc: { ref_total: 1 } });
+                await this.IncrementRefTotal(refAddress)
             } catch(err) {
                 refAddress = '';
             }

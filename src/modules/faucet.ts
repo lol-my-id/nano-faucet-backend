@@ -111,7 +111,6 @@ export class Faucet {
     async processClaim(address: string, refAddress: string): Promise<Claim> {
         if (!validate(address)) throw new Error('Invalid address');
 
-        const isRef = validate(refAddress);
         const prize = this.roll();
 
         return new Promise<Claim>((resolve, reject) => {
@@ -123,21 +122,20 @@ export class Faucet {
                     throw new Error('Claim too soon');
                 }
 
-                if (isRef) {
-                    Wallet.IncrementRefTotal(refAddress).catch(()=>{}); // Ignore errors
-                }
-
                 await Wallet.Update(data._id.toString(), { $inc: { times: 1 }, last: now });
 
+                log.debug(`Awarding ${address} with ${prize}, ref: ${refAddress}`);
                 try {
                     const hash = await this.settings.wallet.send(address, prize);
-
-
+                    
                     if(data.ref_link && ExchangeService.available) {
                         try {
                             const refPrize = ExchangeService.convert(this.settings.currency, getCurrencyFromAddress(data.ref_link) as Currency, prize);
+                            log.debug(`Awarding referral ${data.ref_link} with ${refPrize*0.2}`);
                             this.awardReferral(data.ref_link, refPrize*0.2);
-                        } catch {} // Ignore errors
+                        } catch(err) {
+                            log.error('Failed to award referral:', err);
+                        } // Ignore errors
                     }
 
                     resolve({ hash, prize });

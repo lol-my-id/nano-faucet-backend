@@ -133,6 +133,8 @@ class ExchangeService {
       }
     }
 
+    newRates['NANO'] = { rate: 1, updatedAt: Math.floor(Date.now() / 1000) }; // NANO is the base currency, not included in the API
+
     return newRates;
   }
 
